@@ -1,36 +1,34 @@
 const mongoose = require('../../common/services/mongoose.service').mongoose;
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
+const categorySchema = new Schema({
     name: String,
-    email: String,
-    password: String,
-    permissionLevel: Number
 }, {
     timestamps: true
 });
 
-userSchema.virtual('id').get(function () {
+categorySchema.virtual('id').get(function () {
     return this._id.toHexString();
 });
 
 // Ensure virtual fields are serialised.
-userSchema.set('toJSON', {
+categorySchema.set('toJSON', {
     virtuals: true
 });
 
-userSchema.findById = function (cb) {
-    return this.model('Users').find({id: this.id}, cb);
+categorySchema.findById = function (cb) {
+    return this.model('Wallets').find({id: this.id}, cb);
 };
 
-const User = mongoose.model('Users', userSchema);
+const Wallet = mongoose.model('Wallets', categorySchema);
 
-exports.findByEmail = (email) => {
-    return User.find({email: email});
+
+exports.findByNumber = (number) => {
+    return Wallet.find({number: number});
 };
 
 exports.findById = (id) => {
-    return User.findById(id)
+    return Wallet.findById(id)
         .then((result) => {
             result = result.toJSON();
             delete result._id;
@@ -39,35 +37,35 @@ exports.findById = (id) => {
         });
 };
 
-exports.createUser = (userData) => {
-    const user = new User(userData);
-    return user.save();
+exports.createWallet = (categoryData) => {
+    const category = new Wallet(categoryData);
+    return category.save();
 };
 
 exports.list = (perPage, page) => {
     return new Promise((resolve, reject) => {
-        User.find()
+        Wallet.find()
             .limit(perPage)
             .skip(perPage * page)
-            .exec(function (err, users) {
+            .exec(function (err, categorys) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(users);
+                    resolve(categorys);
                 }
             })
     });
 };
 
-exports.patchUser = (id, userData) => {
-    return User.findOneAndUpdate({
+exports.patchWallet = (id, categoryData) => {
+    return Wallet.findOneAndUpdate({
         _id: id
-    }, userData);
+    }, categoryData);
 };
 
-exports.removeById = (userId) => {
+exports.removeById = (categoryId) => {
     return new Promise((resolve, reject) => {
-        User.deleteMany({_id: userId}, (err) => {
+        Wallet.deleteMany({_id: categoryId}, (err) => {
             if (err) {
                 reject(err);
             } else {

@@ -1,36 +1,38 @@
 const mongoose = require('../../common/services/mongoose.service').mongoose;
 const Schema = mongoose.Schema;
 
-const userSchema = new Schema({
-    name: String,
-    email: String,
-    password: String,
-    permissionLevel: Number
+const groupSchema = new Schema({
+    name: {
+        type: Schema.Types.String,
+        required: true
+    },
+    parent: {
+        type: Schema.Types.ObjectId,
+        ref: "Group",
+    }
 }, {
     timestamps: true
 });
 
-userSchema.virtual('id').get(function () {
+groupSchema.virtual('id').get(function () {
     return this._id.toHexString();
 });
 
 // Ensure virtual fields are serialised.
-userSchema.set('toJSON', {
+groupSchema.set('toJSON', {
     virtuals: true
 });
 
-userSchema.findById = function (cb) {
-    return this.model('Users').find({id: this.id}, cb);
+groupSchema.findById = function (cb) {
+    return this.model('Groups').find({ id: this.id }, cb);
 };
 
-const User = mongoose.model('Users', userSchema);
+const Group = mongoose.model('Groups', groupSchema);
 
-exports.findByEmail = (email) => {
-    return User.find({email: email});
-};
+exports.schema = groupSchema;
 
 exports.findById = (id) => {
-    return User.findById(id)
+    return Group.findById(id)
         .then((result) => {
             result = result.toJSON();
             delete result._id;
@@ -39,35 +41,35 @@ exports.findById = (id) => {
         });
 };
 
-exports.createUser = (userData) => {
-    const user = new User(userData);
-    return user.save();
+exports.createGroup = (groupData) => {
+    const group = new Group(groupData);
+    return group.save();
 };
 
 exports.list = (perPage, page) => {
     return new Promise((resolve, reject) => {
-        User.find()
+        Group.find()
             .limit(perPage)
             .skip(perPage * page)
-            .exec(function (err, users) {
+            .exec(function (err, groups) {
                 if (err) {
                     reject(err);
                 } else {
-                    resolve(users);
+                    resolve(groups);
                 }
             })
     });
 };
 
-exports.patchUser = (id, userData) => {
-    return User.findOneAndUpdate({
+exports.patchGroup = (id, groupData) => {
+    return Group.findOneAndUpdate({
         _id: id
-    }, userData);
+    }, groupData);
 };
 
-exports.removeById = (userId) => {
+exports.removeById = (groupId) => {
     return new Promise((resolve, reject) => {
-        User.deleteMany({_id: userId}, (err) => {
+        Group.deleteMany({ _id: groupId }, (err) => {
             if (err) {
                 reject(err);
             } else {

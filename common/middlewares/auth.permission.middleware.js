@@ -25,7 +25,10 @@ exports.onlySameUserOrAdminCanDoThisAction = (req, res, next) => {
         if (user_permission_level & ADMIN_PERMISSION) {
             return next();
         } else {
-            return res.status(403).send();
+            return res.status(403).send({
+                status: 'forbidden',
+                errors: ['Access to this resource is forbidden']
+            });
         }
     }
 
